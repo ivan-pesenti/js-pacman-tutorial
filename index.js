@@ -63,6 +63,43 @@ function gameLoop(pacman, ghosts) {
         gameBoard.moveCharacter(ghost);
     });
     checkCollision(pacman, ghosts);
+
+    // check if Pacman eats a dot
+    if (gameBoard.objectExist(pacman.pos, OBJECT_TYPE.DOT)) {
+        gameBoard.removeObject(pacman.pos, [OBJECT_TYPE.DOT]);
+        gameBoard.dotCount--;
+        score += 10;
+    }
+
+    // check if Pacman eats a powerpill
+    if (gameBoard.objectExist(pacman.pos, OBJECT_TYPE.PILL)) { 
+        gameBoard.removeObject(pacman.pos, [OBJECT_TYPE.PILL]);
+
+        pacman.powerPill = true;
+        score += 50;
+
+        clearTimeout(powerPillTimer);
+        powerPillTimer = setTimeout(() => {
+            pacman.powerPill = false;
+        }, POWER_PILL_TIME);
+    }
+
+    // change ghost scare mode depending on PowerPill
+    if (pacman.powerPill !== powerPillActive) {
+        powerPillActive = pacman.powerPill;
+        ghosts.forEach((ghost) => {
+            ghost.isScared = pacman.powerPill;
+        });
+    }
+
+    // check if all dots have been eaten
+    if (gameBoard.dotCount === 0) {
+        gameWin = true;
+        gameOver(pacman, ghosts);
+    }
+
+    // show the score
+    scoreTable.innerHTML = score;
 }
 
 function startGame() {
